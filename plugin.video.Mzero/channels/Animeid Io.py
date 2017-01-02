@@ -55,7 +55,7 @@ def letras(item):
     data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
-    data = scrapertools.get_match(data, '<div class="alphabet">(.+?)</div>')
+    data = scrapertools.get_match(data, '<div class="first-char">(.+?)</div>')
     patron = '<a href="([^"]+)[^>]+>([^<]+)</a>'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
@@ -79,8 +79,8 @@ def generos(item):
     data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
-    data = scrapertools.get_match(data, '<div class="barTitle">Buscar por género</div><div class="barContent">' +
-                                  '<div class="arrow-general"></div><div>(.*?)</div>')
+    data = scrapertools.get_match(data, '<div class="anime_name_img_genre"></div><h2>Géneros</h2></div>
+	                                     <ul>(.*?)</ul>')
     patron = '<a href="([^"]+)[^>]+>([^<]+)</a>'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
@@ -120,7 +120,7 @@ def series(item):
 
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
-    patron = "<td title='<img.+?src=\"([^\"]+)\".+?<a.+?href=\"([^\"]+)\">(.*?)</a><p>(.*?)</p>"
+    patron = "<div class=.+?<img src=\"([^\"]+)\".+?<a.+?href=\"([^\"]+)\">(.*?)</a><p>(.*?)</p>"
     matches = re.compile(patron, re.DOTALL).findall(data)
     itemlist = []
 
@@ -160,7 +160,7 @@ def episodios(item):
     patron = "<p><span>(.*?)</span>"
     aux_plot = scrapertools.find_single_match(data, patron)
 
-    patron = '<td><ahref="([^"]+)">(.*?)</a></td><td>(.*?)</td>'
+    patron = '<li><ahref="([^"]+)">(.*?)</a></li><li>(.*?)</li>'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     pelicula = False
