@@ -79,8 +79,7 @@ def generos(item):
     data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
-    data = scrapertools.get_match(data, '<div class="anime_name_img_genre"></div><h2>Géneros</h2></div>
-	                                     <ul>(.*?)</ul>')
+    data = scrapertools.get_match(data, '<div class="anime_name_img_genre"></div><h2>Géneros</h2></div><ul>(.*?)</ul>')
     patron = '<a href="([^"]+)[^>]+>([^<]+)</a>'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
