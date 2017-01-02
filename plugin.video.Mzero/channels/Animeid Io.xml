@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<channel>
+	<id>Animeid Io</id>
+	<name>Animeid Io</name>
+
+	<active>true</active>
+	<adult>false</adult>
+	<language>es</language>
+
+	<fanart></fanart>
+	<t<thumbnail>https://2.bp.blogspot.com/-hrR2Erp62tA/WGgYWHfNC-I/AAAAAAAAACI/qMDnQRI4klceUSK1QI5x4-nK2Nni-AYggCLcB/s1600/Animeid%2BIo%2B1.png</thumbnail>
+	<bannermenu>https://3.bp.blogspot.com/-maFzZWkkWvw/WGgYYXFwK9I/AAAAAAAAACM/Y4jK_nMY_vcXxoMSXfKjY8KqDwBcRwLjgCLcB/s1600/Animeid%2BIo%2B2.png</bannermenu>
+
+	<update_url>https://raw.githubusercontent.com/Mzero2010/LatinStar2017/master/plugin.video.Mzero/channels/</update_url>
+	<version>10</version>
+	
+    <changes>
+		<change>
+			<date>01/07/2016</date>
+			<autor>SeiTaN</autor>
+			<description>nuevo canal</description>
+		</change>
+	</changes>
+	
+	<categories>
+		<category>anime</category>
+	</categories>
+
+	<settings>
+		<id>include_in_global_search</id>
+		<type>bool</type>
+		<label>Incluir en busqueda global</label>
+		<default>false</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+</channel>
