@@ -12,7 +12,7 @@ from core import logger
 from core import scrapertools
 
 
-headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0'}
+headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:47.0) Gecko/20100101 Firefox/47.0'}
 
 
 def test_video_exists(page_url):
@@ -31,37 +31,67 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     video_urls = []
 
     data = scrapertools.downloadpageWithoutCookies(page_url)
-
     subtitle = scrapertools.find_single_match(data, '<track kind="captions" src="([^"]+)" srclang="es"')
     #Header para la descarga
-    header_down = "|User-Agent="+headers['User-Agent']+"|"
+    header_down = "|User-Agent="+headers['User-Agent']
 
-    from lib.aadecode import decode as aadecode
-    if "videocontainer" not in data:
-        url = page_url.replace("/embed/","/f/")
-        data = scrapertools.downloadpageWithoutCookies(url)
-        text_encode = scrapertools.find_single_match(data,"Click to start Download.*?<script[^>]+>(.*?)</script")
-        text_decode = aadecode(text_encode)
-        
-        videourl = "http://" + scrapertools.find_single_match(text_decode, "(openload.co/.*?)\}")
-        extension = scrapertools.find_single_match(data, '<meta name="description" content="([^"]+)"')
-        extension = "." + extension.rsplit(".", 1)[1]
-        video_urls.append([extension + " [Openload]", videourl+header_down+extension])
+    try:
+        from lib.aadecode import decode as aadecode
+        if "videocontainer" not in data:
+            url = page_url.replace("/embed/","/f/")
+            data = scrapertools.downloadpageWithoutCookies(url)
+
+        text_encode = scrapertools.find_multiple_matches(data, '(ﾟωﾟ.*?\(\'\_\'\));')
+        text_decode = ""
+        for t in text_encode:
+            text_decode += aadecode(t)
+
+        var_r = scrapertools.find_single_match(text_decode, "window.r\s*=\s*['\"]([^'\"]+)['\"]")
+        var_encodes = scrapertools.find_multiple_matches(data, 'id="'+var_r+'[^"]+">([^<]+)<')
+
+        videourl = ""
+        text_decode = ""
+        for encode in var_encodes:
+            try:
+                value = int(encode[0:2])
+                index = 2
+                while index < len(encode):
+                    text_decode += chr(int(encode[index:index+3]) - value * int(encode[index+3:index+3+2]))
+                    index += 5
+            except:
+                continue
+         
+            videourl = "https://openload.co/stream/%s?mime=true" % text_decode
+            resp_headers = scrapertools.get_headers_from_response(videourl)
+            extension = ""
+            for head, value in resp_headers:
+                if head == "location":
+                    videourl = value.replace("https", "http").replace("?mime=true", "")
+                elif head == "content-type":
+                    extension = value
+            break
+
+        # Falla el método, se utiliza la api aunque en horas punta no funciona
+        if not videourl:
+            videourl, extension = get_link_api(page_url)
+    except:
+        import traceback
+        logger.info("pelisalacarta.servers.openload "+traceback.format_exc())
+        # Falla el método, se utiliza la api aunque en horas punta no funciona
+        videourl, extension = get_link_api(page_url)
+
+    extension = extension.replace("video/", ".").replace("application/x-", ".")
+    if not extension:
+        try:
+            extension = scrapertools.find_single_match(data, '<meta name="description" content="([^"]+)"')
+            extension = "."+extension.rsplit(".", 1)[1]
+        except:
+            pass
+
+    if config.get_platform() != "plex":
+        video_urls.append([extension + " [Openload] ", videourl+header_down+extension, 0, subtitle])
     else:
-        text_encode = scrapertools.find_multiple_matches(data,'<script[^>]+>(ﾟωﾟ.*?)</script>')
-        decodeindex = aadecode(text_encode[0])
-        subtract = scrapertools.find_single_match(decodeindex, 'welikekodi.*?(\([^;]+\))')
-        index = int(eval(subtract))
-        
-        # Buscamos la variable que nos indica el script correcto
-        text_decode = aadecode(text_encode[index])
-
-        videourl = "http://" + scrapertools.find_single_match(text_decode, "(openload.co/.*?)\}")
-        extension = "." + scrapertools.find_single_match(text_decode, "video/(\w+)")
-        if config.get_platform() != "plex":
-            video_urls.append([extension + " [Openload] ", videourl+header_down+extension, 0, subtitle])
-        else:
-            video_urls.append([extension + " [Openload] ", videourl, 0, subtitle])
+        video_urls.append([extension + " [Openload] ", videourl, 0, subtitle])
 
     for video_url in video_urls:
         logger.info("pelisalacarta.servers.openload %s - %s" % (video_url[0],video_url[1]))
@@ -74,7 +104,7 @@ def find_videos(text):
     encontrados = set()
     devuelve = []
 
-    patronvideos = '//(?:www.)?openload.../(?:embed|f)/([0-9a-zA-Z-_]+)'
+    patronvideos = '(?:openload|oload).../(?:embed|f)/([0-9a-zA-Z-_]+)'
     logger.info("pelisalacarta.servers.openload find_videos #" + patronvideos + "#")
 
     matches = re.compile(patronvideos, re.DOTALL).findall(text)
@@ -90,3 +120,23 @@ def find_videos(text):
             logger.info("  url duplicada=" + url)
 
     return devuelve
+
+
+def get_link_api(page_url):
+    from core import jsontools
+    file_id = scrapertools.find_single_match(page_url, '(?:embed|f)/([0-9a-zA-Z-_]+)')
+    login = "97b2326d7db81f0f"
+    key = "AQFO3QJQ"
+    data = scrapertools.downloadpageWithoutCookies("https://api.openload.co/1/file/dlticket?file=%s&login=%s&key=%s" % (file_id, login, key))
+    data = jsontools.load_json(data)
+    extension = ""
+    if data["status"] == 200:
+        ticket = data["result"]["ticket"]
+        data = scrapertools.downloadpageWithoutCookies("https://api.openload.co/1/file/dl?file=%s&ticket=%s" % (file_id, ticket))
+        data = jsontools.load_json(data)
+        extension = scrapertools.find_single_match(data["result"]["content_type"], '/(\w+)')
+        videourl = data['result']['url']
+        videourl = videourl.replace("https", "http")
+        return videourl, extension
+
+    return ""

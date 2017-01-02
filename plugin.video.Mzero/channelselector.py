@@ -1,26 +1,26 @@
 # -*- coding: utf-8 -*-
 # ------------------------------------------------------------
-# Mzero 4
+# pelisalacarta 4
 # Copyright 2015 tvalacarta@gmail.com
-# http://blog.tvalacarta.info/plugin-xbmc/Mzero/
+# http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #
 # Distributed under the terms of GNU General Public License v3 (GPLv3)
 # http://www.gnu.org/licenses/gpl-3.0.html
 # ------------------------------------------------------------
-# This file is part of Mzero 4.
+# This file is part of pelisalacarta 4.
 #
-# Mzero 4 is free software: you can redistribute it and/or modify
+# pelisalacarta 4 is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# Mzero 4 is distributed in the hope that it will be useful,
+# pelisalacarta 4 is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Mzero 4.  If not, see <http://www.gnu.org/licenses/>.
+# along with pelisalacarta 4.  If not, see <http://www.gnu.org/licenses/>.
 # ------------------------------------------------------------
 
 import glob
@@ -45,25 +45,29 @@ def getmainlist(preferred_thumb=""):
                          channel="novedades", 
                          action="mainlist",
                          thumbnail=get_thumb(preferred_thumb,"thumb_novedades.png"),
-                         viewmode="movie"))
+                         category=config.get_localized_string(30119),
+                         viewmode="thumbnails"))
 
     itemlist.append(Item(title=config.get_localized_string(30118),
                          channel="channelselector", 
-                         action="channeltypes",
+                         action="getchanneltypes",
                          thumbnail=get_thumb(preferred_thumb,"thumb_canales.png"),
-                         viewmode="movie"))
+                         category= config.get_localized_string(30119),
+                         viewmode="thumbnails"))
 
     itemlist.append(Item(title=config.get_localized_string(30103),
                          channel="buscador", 
                          action="mainlist",
                          thumbnail=get_thumb(preferred_thumb,"thumb_buscar.png"),
+                         category=config.get_localized_string(30119),
                          viewmode="list"))
 
     itemlist.append(Item(title=config.get_localized_string(30102),
                          channel="favoritos", 
                          action="mainlist",
                          thumbnail=get_thumb(preferred_thumb,"thumb_favoritos.png"),
-                         viewmode="movie"))
+                         category=config.get_localized_string(30102),
+                         viewmode="thumbnails"))
 
     if config.get_library_support():
 
@@ -71,33 +75,38 @@ def getmainlist(preferred_thumb=""):
                              channel="biblioteca", 
                              action="mainlist",
                              thumbnail=get_thumb(preferred_thumb,"thumb_biblioteca.png"),
-                             viewmode="movie"))
+                             category=config.get_localized_string(30119),
+                             viewmode="thumbnails"))
 
     itemlist.append(Item(title=config.get_localized_string(30101), 
                          channel="descargas",
                          action="mainlist",
                          thumbnail=get_thumb(preferred_thumb,"thumb_descargas.png"),
-                         viewmode="movie"))
+                         viewmode="list"))
+
+    thumb_configuracion = "thumb_configuracion_"+config.get_setting("plugin_updates_available")+".png"
 
     if "xbmceden" in config.get_platform():
 
         itemlist.append(Item(title=config.get_localized_string(30100),
                              channel="configuracion", 
                              action="mainlist",
-                             thumbnail=get_thumb(preferred_thumb,"thumb_configuracion.png"),
+                             thumbnail=get_thumb(preferred_thumb,thumb_configuracion),
                              folder=False, 
                              viewmode="list"))
     else:
         itemlist.append(Item(title=config.get_localized_string(30100),
                              channel="configuracion", 
                              action="mainlist",
-                             thumbnail=get_thumb(preferred_thumb,"thumb_configuracion.png"),
+                             thumbnail=get_thumb(preferred_thumb,thumb_configuracion),
+                             category=config.get_localized_string(30100),
                              viewmode="list"))
 
     itemlist.append(Item(title=config.get_localized_string(30104), 
                          channel="ayuda", 
                          action="mainlist",
                          thumbnail=get_thumb(preferred_thumb,"thumb_ayuda.png"),
+                         category=config.get_localized_string(30104),
                          viewmode="list"))
     return itemlist
 
@@ -156,18 +165,20 @@ def getchanneltypes(preferred_thumb=""):
 
     # Ahora construye el itemlist ordenadamente
     itemlist = list()
-
-    itemlist.append(Item(title=config.get_localized_string(30121), channel="channelselector", action="listchannels",
-                         category="all", thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
-                                                                    "thumb_canales_todos.png"), viewmode="movie"))
+    title = config.get_localized_string(30121)
+    itemlist.append(Item(title=title, channel="channelselector", action="filterchannels",
+                         category=title, channel_type="all",
+                         thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
+                                                                    "thumb_canales_todos.png"), viewmode="thumbnails"))
     logger.info("channelselector.getchanneltypes Ordenados:")
     for channel_type in valid_types:
         logger.info("channelselector.getchanneltypes channel_type="+channel_type)
         if channel_type in channel_types:
             title = dict_cat_lang.get(channel_type, channel_type)
-            itemlist.append(Item(title=title, channel="channelselector", action="listchannels", category=channel_type,
+            itemlist.append(Item(title=title, channel="channelselector", action="filterchannels", category=title,
+                                 channel_type= channel_type, viewmode="thumbnails",
                                  thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
-                                                            "thumb_canales_"+channel_type+".png"), viewmode="movie"))
+                                                            "thumb_canales_"+channel_type+".png")))
 
     return itemlist
 
@@ -219,7 +230,11 @@ def filterchannels(category,preferred_thumb=""):
                     continue
 
                 # Si ha llegado hasta aquí, lo añade
-                channelslist.append(Item(title=channel_parameters["title"], channel=channel_parameters["channel"], action="mainlist", thumbnail=channel_parameters["thumbnail"] , fanart=channel_parameters["fanart"], category=", ".join(channel_parameters["categories"])[:-2], language=channel_parameters["language"], viewmode="list" ))
+                channelslist.append(Item(title=channel_parameters["title"], channel=channel_parameters["channel"],
+                                         action="mainlist", thumbnail=channel_parameters["thumbnail"] ,
+                                         fanart=channel_parameters["fanart"],
+                                         category=channel_parameters["title"],
+                                         language=channel_parameters["language"], viewmode="list" ))
 
             except:
                 logger.info("Se ha producido un error al leer los datos del canal " + channel)

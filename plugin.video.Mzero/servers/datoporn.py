@@ -28,14 +28,16 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
 
     data = scrapertools.cache_page(page_url)
 
-    match = scrapertools.find_single_match(data, "<script type='text/javascript'>(.*?)</script>")
-    data = jsunpack.unpack(match)
+    media_urls = scrapertools.find_multiple_matches(data,'file\:"([^"]+\.mp4)",label:"([^"]+)"')
+    if not media_urls:
+        match = scrapertools.find_single_match(data, "<script type='text/javascript'>(.*?)</script>")
+        data = jsunpack.unpack(match)
+        media_urls = scrapertools.find_multiple_matches(data,'\[\{file\:"([^"]+)"')
 
     # Extrae la URL
     video_urls = []
-    media_urls = scrapertools.find_multiple_matches(data,'\[\{file\:"([^"]+)"')
-    for media_url in media_urls:
-        video_urls.append( [ "."+media_url.rsplit('.',1)[1]+" [datoporn]", media_url])
+    for media_url in sorted(media_urls, key= lambda x:int(x[1])):
+        video_urls.append( [ "."+media_url[0].rsplit('.',1)[1]+ " " + media_url[1] + "p [datoporn]", media_url[0]])
 
     for video_url in video_urls:
         logger.info("pelisalacarta.servers.datoporn %s - %s" % (video_url[0],video_url[1]))

@@ -19,7 +19,7 @@
     <forum>http://www.mimediacenter.info/foro</forum>
     <website>http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta</website>
     <email>tvalacarta@gmail.com</email>
-    <source>https://github.com/Mzero2010/LatinStar2017</source>
+    <source>https://github.com/Mzero2010/MaxZone</source>
   </extension>
   <extension point="xbmc.service" library="library_service.py" start="login|startup">
   </extension>

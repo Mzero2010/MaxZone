@@ -110,7 +110,7 @@ def findvideosbyserver(data, serverid):
 
     return devuelve
 
-def findvideos(data):
+def findvideos(data, skip=False):
     logger.info("Mzero.core.servertools findvideos") # en #"+data+"#")
     encontrados = set()
     devuelve = []
@@ -124,7 +124,9 @@ def findvideos(data):
             #exec "devuelve.extend("+serverid+".find_videos(data))"
             servers_module = __import__("servers."+serverid)
             server_module = getattr(servers_module,serverid)
-            devuelve.extend( server_module.find_videos(data) )
+            result = server_module.find_videos(data)
+            if result and skip: return result
+            devuelve.extend(result)
         except ImportError:
             logger.info("No existe conector para #"+serverid+"#")
             #import traceback
@@ -147,12 +149,14 @@ def get_video_urls(server,url):
     return video_urls
 
 def get_channel_module(channel_name):
-    channels_module = __import__("channels."+channel_name)
-    channel_module = getattr(channels_module,channel_name)
+    if not "." in channel_name:
+      channel_module = __import__('channels.%s' % channel_name, None, None, ["channels.%s" % channel_name])
+    else:
+      channel_module = __import__(channel_name, None, None, [channel_name])
     return channel_module
 
 def get_server_from_url(url):
-    encontrado = findvideos(url)
+    encontrado = findvideos(url, True)
     if len(encontrado)>0:
         devuelve = encontrado[0][2]
     else:
@@ -234,21 +238,29 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
                     return video_urls,False,"No se puede encontrar el vídeo en "+server
 
             # Obtiene enlaces para las diferentes opciones premium
+            error_message = []
             for premium in server_parameters["premium"]:
               if config.get_setting(premium+"premium")=="true":
                 if muestra_dialogo:
                   progreso.update((100 / len(opciones)) * opciones.index(premium)  , "Conectando con "+premium)
                 exec "from servers import "+premium+" as premium_conector"
                 if premium == "realdebrid":
-                    if config.is_xbmc() or config.get_platform() == "mediaserver":
-                        debrid_urls = premium_conector.get_video_url( page_url=url , premium=True , video_password=video_password )
-                        if not "REAL-DEBRID:" in debrid_urls[0][0]:
-                            video_urls.extend(debrid_urls)
-                        else:
-                            if len(video_urls) == 0:
-                                return video_urls, False, debrid_urls[0][0]
+                    debrid_urls = premium_conector.get_video_url( page_url=url , premium=True , video_password=video_password )
+                    if not "REAL-DEBRID:" in debrid_urls[0][0]:
+                        video_urls.extend(debrid_urls)
+                    else:
+                        error_message.append(debrid_urls[0][0])
+                elif premium == "alldebrid":
+                    alldebrid_urls = premium_conector.get_video_url( page_url=url , premium=True , user=config.get_setting(premium+"user") , password=config.get_setting(premium+"password"), video_password=video_password )
+                    if not "Alldebrid:" in alldebrid_urls[0][0]:
+                        video_urls.extend(alldebrid_urls)
+                    else:
+                        error_message.append(alldebrid_urls[0][0])
                 else:
                     video_urls.extend(premium_conector.get_video_url( page_url=url , premium=True , user=config.get_setting(premium+"user") , password=config.get_setting(premium+"password"), video_password=video_password ))
+
+            if not video_urls and error_message:
+                return video_urls, False, " || ".join(error_message)
 
             if muestra_dialogo:
                 progreso.update( 100 , "Proceso finalizado")
