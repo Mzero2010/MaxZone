@@ -36,7 +36,7 @@ def mainlist(item):
                          url=urlparse.urljoin(CHANNEL_HOST, "ListadeAnime")))
     itemlist.append(Item(channel=item.channel, action="series", title="Por popularidad",
                          url=urlparse.urljoin(CHANNEL_HOST, "/ListadeAnime/MasVisto")))
-    itemlist.append(Item(channel=item.channel, action="series", title="Novedades",
+    itemlist.append(Item(channel=item.channel, action="series", title="Nuevos",
                          url=urlparse.urljoin(CHANNEL_HOST, "ListadeAnime/LatestUpdate")))
     itemlist.append(Item(channel=item.channel, action="search", title="Buscar...",
                          url=urlparse.urljoin(CHANNEL_HOST, "Buscar?s=")))
@@ -55,7 +55,7 @@ def letras(item):
     data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
-    data = scrapertools.get_match(data, '<div class="first-char">(.+?)</div>')
+    data = scrapertools.get_match(data, '<div class="list_search">(.+?)</div>')
     patron = '<a href="([^"]+)[^>]+>([^<]+)</a>'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
@@ -79,7 +79,7 @@ def generos(item):
     data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
-    data = scrapertools.get_match(data, '<div class="anime_name_img_genre"></div><h2>Géneros</h2></div><ul>(.*?)</ul>')
+    data = scrapertools.get_match(data, '<div class="recent"><nav class="menu_series genre right">(.*?)</div>')
     patron = '<a href="([^"]+)[^>]+>([^<]+)</a>'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
