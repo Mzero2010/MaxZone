@@ -55,8 +55,8 @@ def letras(item):
     data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
-    data = scrapertools.get_match(data, '<ul><li class="first-char">(.+?)</ul>')
-    patron = '<a href="([^"]+)[^>]+>([^<]+)</a>'
+    data = scrapertools.get_match(data, '<div class="list_search"><ul>(.+?)</ul></div>')
+    patron = '<li class="first-char"><a href="([^"]+)[^>]+>([^<]+)</a></li>'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for scrapedurl, scrapedtitle in matches:
@@ -79,9 +79,10 @@ def generos(item):
     data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
-    data = scrapertools.get_match(data, '<div class="recent">(.*?)</nav>')
+    data = scrapertools.get_match(data, '<div class="recent"><nav class="menu_series genre right"><ul>(.*?)</div>')
+	
     patron = '<li  class="even" ><a href="([^"]+)[^>]+>([^<]+)</a></li>'
-	patron += '<li  class="oven" ><a href="([^"]+)[^>]+>([^<]+)</a></li>'
+	patron += '<li  class="even" ><a href="([^"]+)[^>]+>([^<]+)</a></li>'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for scrapedurl, scrapedtitle in matches:
@@ -120,7 +121,7 @@ def series(item):
 
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
-    patron = "<li title='<div class=""><img src=\"([^\"]+)\".+?<a.+?href=\"([^\"]+)\">(.*?)</a><p>(.*?)</p></li>"
+    patron = "<li title='<div class="thumnail_tool"><img src=\"([^\"]+)\".+?<a.+?href=\"([^\"]+)\">(.*?)</a><p class="">(.*?)</p></li>"
     matches = re.compile(patron, re.DOTALL).findall(data)
     itemlist = []
 
