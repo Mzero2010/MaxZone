@@ -38,7 +38,7 @@ def mainlist(item):
                          url=urlparse.urljoin(CHANNEL_HOST, "/ListadeAnime/MasVisto")))
     itemlist.append(Item(channel=item.channel, action="series", title="Última Actualización",
                          url=urlparse.urljoin(CHANNEL_HOST, "ListadeAnime/LatestUpdate")))
-	itemlist.append(Item(channel=item.channel, action="series", title="Novedades",
+    itemlist.append(Item(channel=item.channel, action="series", title="Novedades",
                          url=urlparse.urljoin(CHANNEL_HOST, "ListadeAnime/NuevoYCaliente")))
     itemlist.append(Item(channel=item.channel, action="series", title="Nuevo Añadido",
                          url=urlparse.urljoin(CHANNEL_HOST, "ListadeAnime/Nuevo")))					 
@@ -60,7 +60,7 @@ def letras(item):
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
     data = scrapertools.get_match(data, '<div class="list_search"><ul>(.+?)</div>')
-	patron = '<li class="first-char"><a href="([^"]+)[^>]+>([^<]+)</a>'
+    patron = '<li class="first-char"><a href="([^"]+)[^>]+>([^<]+)</a>'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for scrapedurl, scrapedtitle in matches:
