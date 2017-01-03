@@ -36,8 +36,12 @@ def mainlist(item):
                          url=urlparse.urljoin(CHANNEL_HOST, "ListadeAnime")))
     itemlist.append(Item(channel=item.channel, action="series", title="Por popularidad",
                          url=urlparse.urljoin(CHANNEL_HOST, "/ListadeAnime/MasVisto")))
-    itemlist.append(Item(channel=item.channel, action="series", title="Novedades",
+    itemlist.append(Item(channel=item.channel, action="series", title="Última Actualización",
                          url=urlparse.urljoin(CHANNEL_HOST, "ListadeAnime/LatestUpdate")))
+	itemlist.append(Item(channel=item.channel, action="series", title="Novedades",
+                         url=urlparse.urljoin(CHANNEL_HOST, "ListadeAnime/NuevoYCaliente")))
+    itemlist.append(Item(channel=item.channel, action="series", title="Nuevo Añadido",
+                         url=urlparse.urljoin(CHANNEL_HOST, "ListadeAnime/Nuevo")))					 
     itemlist.append(Item(channel=item.channel, action="search", title="Buscar...",
                          url=urlparse.urljoin(CHANNEL_HOST, "Buscar?s=")))
 
@@ -55,8 +59,8 @@ def letras(item):
     data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
-    data = scrapertools.get_match(data, '<div class="list_search"><ul>(.+?)</ul></div>')
-    patron = '<li class="first-char"><a href="([^"]+)[^>]+>([^<]+)</a></li>'
+    data = scrapertools.get_match(data, '<div class="list_search"><ul>(.+?)</div>')
+	patron = '<li class="first-char"><a href="([^"]+)[^>]+>([^<]+)</a>'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for scrapedurl, scrapedtitle in matches:
@@ -81,8 +85,7 @@ def generos(item):
 
     data = scrapertools.get_match(data, '<div class="recent"><nav class="menu_series genre right"><ul>(.*?)</div>')
 	
-    patron = '<li  class="even" ><a href="([^"]+)[^>]+>([^<]+)</a></li>'
-    patron += '<li  class="even" ><a href="([^"]+)[^>]+>([^<]+)</a></li>'
+    patron = '<li  class=""><a href="([^"]+)[^>]+>([^<]+)</a></li>'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for scrapedurl, scrapedtitle in matches:
