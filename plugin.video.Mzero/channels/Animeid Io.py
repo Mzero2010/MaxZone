@@ -82,7 +82,7 @@ def generos(item):
     data = scrapertools.get_match(data, '<div class="recent"><nav class="menu_series genre right"><ul>(.*?)</div>')
 	
     patron = '<li  class="even" ><a href="([^"]+)[^>]+>([^<]+)</a></li>'
-	patron += '<li  class="even" ><a href="([^"]+)[^>]+>([^<]+)</a></li>'
+    patron += '<li  class="even" ><a href="([^"]+)[^>]+>([^<]+)</a></li>'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for scrapedurl, scrapedtitle in matches:
@@ -121,7 +121,7 @@ def series(item):
 
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
-    patron = "<li title='<div class="thumnail_tool"><img src=\"([^\"]+)\".+?<a.+?href=\"([^\"]+)\">(.*?)</a><p class="">(.*?)</p></li>"
+    patron = "<li title='<div class=""><img src=\"([^\"]+)\".+?<a.+?href=\"([^\"]+)\">(.*?)</a><p class="">(.*?)</p></li>"
     matches = re.compile(patron, re.DOTALL).findall(data)
     itemlist = []
 
