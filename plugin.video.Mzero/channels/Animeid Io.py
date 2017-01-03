@@ -36,7 +36,7 @@ def mainlist(item):
                          url=urlparse.urljoin(CHANNEL_HOST, "ListadeAnime")))
     itemlist.append(Item(channel=item.channel, action="series", title="Por popularidad",
                          url=urlparse.urljoin(CHANNEL_HOST, "/ListadeAnime/MasVisto")))
-    itemlist.append(Item(channel=item.channel, action="series", title="Nuevos",
+    itemlist.append(Item(channel=item.channel, action="series", title="Novedades",
                          url=urlparse.urljoin(CHANNEL_HOST, "ListadeAnime/LatestUpdate")))
     itemlist.append(Item(channel=item.channel, action="search", title="Buscar...",
                          url=urlparse.urljoin(CHANNEL_HOST, "Buscar?s=")))
@@ -55,8 +55,8 @@ def letras(item):
     data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
-    data = scrapertools.get_match(data, '<div class="list_search"><ul>(.+?)</div>')
-    patron = '<li class="first-char"><a href="([^"]+)[^>]+>([^<]+)</a></li>'
+    data = scrapertools.get_match(data, '<ul><li class="first-char">(.+?)</ul>')
+    patron = '<a href="([^"]+)[^>]+>([^<]+)</a>'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for scrapedurl, scrapedtitle in matches:
@@ -79,7 +79,7 @@ def generos(item):
     data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
-    data = scrapertools.get_match(data, '<div class="recent"><nav class="menu_series genre right"><ul>(.*?)</div>')
+    data = scrapertools.get_match(data, '<div class="recent">(.*?)</nav>')
     patron = '<li  class="even" ><a href="([^"]+)[^>]+>([^<]+)</a></li>'
 	patron += '<li  class="oven" ><a href="([^"]+)[^>]+>([^<]+)</a></li>'
     matches = re.compile(patron, re.DOTALL).findall(data)
@@ -120,12 +120,7 @@ def series(item):
 
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
-	patron = '<div class="anime_list_body"><ul class="listing"[^<]+'
-    patron += ''<a href="([^"]+)"[^<]+<img src="[^"]+"
-    patron += '<span[^<]+</span[^<]+'
-    patron += '<a[^>]+>([^<]+)</a.*?'
-    patron += '<p class="sumer"><span>Línea de historia: </span>(.*?)</p'
-    patron = "<div class=.+?<img src=\"([^\"]+)\".+?<a.+?href=\"([^\"]+)\">(.*?)</a><p>(.*?)</p>"
+    patron = "<li title='<div class=""><img src=\"([^\"]+)\".+?<a.+?href=\"([^\"]+)\">(.*?)</a><p>(.*?)</p></li>"
     matches = re.compile(patron, re.DOTALL).findall(data)
     itemlist = []
 
@@ -163,9 +158,9 @@ def episodios(item):
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
     patron = "<p><span>(.*?)</span>"
-    aux_plot = scrapertools.find_single_match(data, '<div class="anime_info_episodes">.*?</div>(.*?)</ul>')
+    aux_plot = scrapertools.find_single_match(data, patron)
 
-    patron = '<li><a href="([^"]+)">([^<]+)</a></li>'
+    patron = '<li><ahref="([^"]+)">(.*?)</a></li>'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     pelicula = False
