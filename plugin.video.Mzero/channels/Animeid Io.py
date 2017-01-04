@@ -59,8 +59,8 @@ def letras(item):
     data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
-    data = scrapertools.get_match(data, '<div class="list_search">(.+?)</div>')
-    patron = '<li class="first-char"><a href="([^"]+)[^>]+>([^<]+)</a></li>'
+    data = scrapertools.get_match(data, '<div class="list_search"><ul>(.+?)</div>')
+    patron = '<a href="([^"]+)[^>]+>([^<]+)</a>'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for scrapedurl, scrapedtitle in matches:
